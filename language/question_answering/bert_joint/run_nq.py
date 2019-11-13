@@ -1268,7 +1268,6 @@ def compute_pred_dict(candidates_dict, dev_features, raw_results):
       examples.append(EvalExample(datum[0], datum[1]))
     elif "token_map" in datum:
       examples[-1].features[idx] = datum
-      examples[-1].features[idx] = datum
     else:
       examples[-1].results[idx] = datum
 
