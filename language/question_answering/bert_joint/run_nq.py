@@ -24,6 +24,7 @@ import json
 import os
 import random
 import re
+import itertools
 
 import enum
 from bert import modeling
@@ -1200,7 +1201,7 @@ def compute_predictions(example):
   summary = ScoreSummary()
 
   if predictions:
-    score, summary, start_span, end_span = sorted(predictions, reverse=True)[0]
+    score, summary, start_span, end_span = sorted(predictions, key=lambda x: x[0], reverse=True)[0]
     short_span = Span(start_span, end_span)
     for c in example.candidates:
       start = short_span.start_token_idx
@@ -1253,11 +1254,12 @@ def compute_pred_dict(candidates_dict, dev_features, raw_results):
 
   # Join examplew with features and raw results.
   examples = []
-  merged = sorted(examples_by_id + raw_results_by_id + features_by_id)
+  merged = sorted(list(itertools.chain(examples_by_id, raw_results_by_id, features_by_id)), key=lambda x: x[0])
   for idx, datum in merged:
     if isinstance(datum, tuple):
       examples.append(EvalExample(datum[0], datum[1]))
     elif "token_map" in datum:
+      examples[-1].features[idx] = datum
       examples[-1].features[idx] = datum
     else:
       examples[-1].results[idx] = datum
