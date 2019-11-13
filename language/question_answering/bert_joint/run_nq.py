@@ -1127,8 +1127,16 @@ class ScoreSummary(object):
 
 def read_candidates_from_one_split(input_path):
   """Read candidates from a single jsonl file."""
+
+  def _open(path):
+    if path.endswith(".gz"):
+      return gzip.GzipFile(fileobj=tf.gfile.Open(path, "r"))
+    else:
+      return tf.gfile.Open(path, "r")
+
   candidates_dict = {}
-  with gzip.GzipFile(fileobj=tf.gfile.Open(input_path)) as input_file:
+  # with gzip.GzipFile(fileobj=tf.gfile.Open(input_path)) as input_file:
+  with _open(input_path) as input_file:
     tf.logging.info("Reading examples from: %s", input_path)
     for line in input_file:
       e = json.loads(line)
