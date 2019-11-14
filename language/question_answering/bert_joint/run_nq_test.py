@@ -40,7 +40,7 @@ class RunNqTest(tf.test.TestCase):
     def write_examples(self, examples):
         tf.gfile.MakeDirs(self.test_tmpdir)
         path = os.path.join(self.test_tmpdir, "nq-unittest.jsonl.gz")
-        with gzip.GzipFile(fileobj=tf.gfile.Open(path, "w")) as output_file:
+        with gzip.open(path, "wt") as output_file:
             for e in examples:
                 output_file.write(json.dumps(e) + "\n")
 
@@ -72,7 +72,7 @@ class RunNqTest(tf.test.TestCase):
         self.test_tmpdir = tf.test.get_temp_dir()
         FLAGS.include_unknowns = 1.0
         FLAGS.max_seq_length = 10
-        with tempfile.NamedTemporaryFile(delete=False) as vocab_writer:
+        with tempfile.NamedTemporaryFile(delete=False, mode='w+', encoding='utf-8') as vocab_writer:
             vocab_writer.write("\n".join(self.VOCAB_TOKENS) + "\n")
             vocab_writer.flush()
             FLAGS.vocab_file = vocab_writer.name
