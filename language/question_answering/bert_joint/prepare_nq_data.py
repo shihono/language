@@ -54,37 +54,37 @@ flags.DEFINE_integer(
 
 
 def get_examples(input_jsonl_pattern):
-  for input_path in tf.gfile.Glob(input_jsonl_pattern):
-    with gzip.GzipFile(fileobj=tf.gfile.Open(input_path)) as input_file:
-      for line in input_file:
-        yield run_nq.create_example_from_jsonl(line)
+    for input_path in tf.gfile.Glob(input_jsonl_pattern):
+        with gzip.GzipFile(fileobj=tf.gfile.Open(input_path)) as input_file:
+            for line in input_file:
+                yield run_nq.create_example_from_jsonl(line)
 
 
 def main(_):
-  examples_processed = 0
-  num_examples_with_correct_context = 0
-  creator_fn = run_nq.CreateTFExampleFn(is_training=FLAGS.is_training)
+    examples_processed = 0
+    num_examples_with_correct_context = 0
+    creator_fn = run_nq.CreateTFExampleFn(is_training=FLAGS.is_training)
 
-  instances = []
-  for example in get_examples(FLAGS.input_jsonl):
-    for instance in creator_fn.process(example):
-      instances.append(instance)
-    if example["has_correct_context"]:
-      num_examples_with_correct_context += 1
-    if examples_processed % 100 == 0:
-      tf.logging.info("Examples processed: %d", examples_processed)
-    examples_processed += 1
-    if FLAGS.max_examples > 0 and examples_processed >= FLAGS.max_examples:
-      break
-  tf.logging.info("Examples with correct context retained: %d of %d",
-                  num_examples_with_correct_context, examples_processed)
+    instances = []
+    for example in get_examples(FLAGS.input_jsonl):
+        for instance in creator_fn.process(example):
+            instances.append(instance)
+        if example["has_correct_context"]:
+            num_examples_with_correct_context += 1
+        if examples_processed % 100 == 0:
+            tf.logging.info("Examples processed: %d", examples_processed)
+        examples_processed += 1
+        if 0 < FLAGS.max_examples <= examples_processed:
+            break
+    tf.logging.info("Examples with correct context retained: %d of %d",
+                    num_examples_with_correct_context, examples_processed)
 
-  random.shuffle(instances)
-  with tf.python_io.TFRecordWriter(FLAGS.output_tfrecord) as writer:
-    for instance in instances:
-      writer.write(instance)
+    random.shuffle(instances)
+    with tf.python_io.TFRecordWriter(FLAGS.output_tfrecord) as writer:
+        for instance in instances:
+            writer.write(instance)
 
 
 if __name__ == "__main__":
-  flags.mark_flag_as_required("vocab_file")
-  tf.app.run()
+    flags.mark_flag_as_required("vocab_file")
+    tf.app.run()
